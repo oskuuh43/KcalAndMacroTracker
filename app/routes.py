@@ -1,57 +1,72 @@
-from flask import render_template, request, redirect, url_for, jsonify
+from flask import render_template, url_for, flash, redirect, request
 from app import app, db
-from app.models import FoodItem
+from app.models import User, FoodItem
+from app.forms import RegistrationForm, LoginForm
+from flask_login import login_user, current_user, logout_user, login_required
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Your account has been created! You are now able to log in', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=True)
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('index'))
+        else:
+            flash('Login Unsuccessful. Please check email and password', 'danger')
+    return render_template('login.html', title='Login', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 @app.route('/')
+@login_required
 def index():
-    return "Hello World!"
-    #return render_template('index.html')
+    food_items = FoodItem.query.filter_by(user_id=current_user.id).all()
+    return render_template('index.html', food_items=food_items)
 
-@app.route('/add_food', methods=['POST'])
+@app.route('/add_food', methods=['GET', 'POST'])
+@login_required
 def add_food():
-    data = request.get_json()
-    name = data.get('name')
-    calories = data.get('calories')
-    protein = data.get('protein')
-    carbohydrates = data.get('carbohydrates')
-    fats = data.get('fats')
+    if request.method == 'POST':
+        name = request.form.get('name')
+        calories = request.form.get('calories')
+        protein = request.form.get('protein')
+        carbohydrates = request.form.get('carbohydrates')
+        fats = request.form.get('fats')
 
-    if not all([name, calories, protein, carbohydrates, fats]):
-        return jsonify({'error': 'Missing data'}), 400
+        new_food_item = FoodItem(name=name, calories=calories, protein=protein, carbohydrates=carbohydrates, fats=fats, user_id=current_user.id)
+        db.session.add(new_food_item)
+        db.session.commit()
+        flash('Food item added successfully', 'success')
+        return redirect(url_for('index'))
+    return render_template('add_food.html')
 
-    food_item = FoodItem(name=name, calories=calories, protein=protein, carbohydrates=carbohydrates, fats=fats)
-    db.session.add(food_item)
-    db.session.commit()
-    return jsonify({'message': f'Added food item {food_item.name}'}), 201
-
-@app.route('/get_food', methods=['GET'])
-def get_food():
-    food_items = FoodItem.query.all()
-    food_list = [{'id': item.id, 'name': item.name, 'calories': item.calories, 'protein': item.protein, 'carbohydrates': item.carbohydrates, 'fats': item.fats} for item in food_items]
-    return jsonify(food_list), 200
-
-@app.route('/update_food/<int:food_id>', methods=['PUT'])
-def update_food(food_id):
-    food_item = FoodItem.query.get(food_id)
-    if not food_item:
-        return jsonify({'error': 'Food item not found'}), 404
-
-    data = request.get_json()
-    food_item.name = data.get('name', food_item.name)
-    food_item.calories = data.get('calories', food_item.calories)
-    food_item.protein = data.get('protein', food_item.protein)
-    food_item.carbohydrates = data.get('carbohydrates', food_item.carbohydrates)
-    food_item.fats = data.get('fats', food_item.fats)
-
-    db.session.commit()
-    return jsonify({'message': f'Food item {food_item.name} updated successfully'}), 200
-
-@app.route('/delete_food/<int:food_id>', methods=['DELETE'])
-def delete_food(food_id):
-    food_item = FoodItem.query.get(food_id)
-    if not food_item:
-        return jsonify({'error': 'Food item not found'}), 404
-
-    db.session.delete(food_item)
-    db.session.commit()
-    return jsonify({'message': f'Food item {food_item.name} deleted successfully'}), 200
+@app.route('/delete_food/<int:id>', methods=['POST'])
+@login_required
+def delete_food(id):
+    food_item = FoodItem.query.get(id)
+    if food_item and food_item.user_id == current_user.id:
+        db.session.delete(food_item)
+        db.session.commit()
+        flash('Food item deleted successfully', 'success')
+    return redirect(url_for('index'))

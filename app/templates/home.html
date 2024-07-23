@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h1>Home</h1>
+<p>Today's date: {{ today }}</p>
+<p>Calorie goal: {{ calorie_goal }}</p>
+<p>Calories left: {{ calories_left }}</p>
+
+<h2>Today's Food Entries</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Calories</th>
+            <th>Protein (g)</th>
+            <th>Fat (g)</th>
+            <th>Carbs (g)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in food_entries %}
+        <tr>
+            <td>{{ entry.name }}</td>
+            <td>{{ entry.calories }}</td>
+            <td>{{ entry.protein }}</td>
+            <td>{{ entry.fat }}</td>
+            <td>{{ entry.carbs }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No food items logged today.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('log_food') }}" class="btn btn-primary">Log Food</a>
+<a href="{{ url_for('set_goals') }}" class="btn btn-secondary">Set Goals</a>
+{% endblock %}

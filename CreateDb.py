@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import FoodItem
+from app.models import FoodEntry, User
 
 with app.app_context():
     db.create_all()

@@ -5,19 +5,41 @@ from app.forms import RegistrationForm, LoginForm
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
 
+
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('Your account has been created! You are now able to log in', 'success')
-        return redirect(url_for('login'))
+        try:
+            # Check if user already exists
+            existing_user = User.query.filter(
+                (User.username == form.username.data) | (User.email == form.email.data)).first()
+            if existing_user:
+                flash('A user with this username or email already exists. Please choose another.', 'danger')
+                return redirect(url_for('register'))
+
+            # Create new user
+            user = User(username=form.username.data, email=form.email.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Your account has been created! You can now log in.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while creating your account. Please try again.', 'danger')
+            print(f"Error: {e}")  # Log the error for debugging
+    else:
+        if form.errors:
+            flash('Registration form contains errors. Please check your inputs.', 'danger')
+            print(form.errors)  # Log form errors for debugging
     return render_template('register.html', title='Register', form=form)
+
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -34,20 +56,29 @@ def login():
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
 
+
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('home'))
 
+
 @app.route('/home')
 @login_required
 def home():
     today = datetime.utcnow().date()
     user = current_user
-    total_calories = sum(entry.calories for entry in FoodEntry.query.filter_by(user_id=user.id, date=today).all())
+
+    # Get today's food entries
+    food_entries_today = FoodEntry.query.filter_by(user_id=user.id, date=today).all()
+
+    total_calories = sum(entry.calories for entry in food_entries_today)
     calories_left = user.daily_calorie_goal - total_calories
-    return render_template('home.html', today=today, calorie_goal=user.daily_calorie_goal, calories_left=calories_left)
+
+    return render_template('home.html', today=today, calorie_goal=user.daily_calorie_goal,
+                           calories_left=calories_left, food_entries=food_entries_today)
 
 
 
@@ -74,7 +105,8 @@ def log_food():
             flash('Please enter valid numbers for calories and macronutrients.', 'danger')
             return redirect(url_for('log_food'))
 
-        entry = FoodEntry(user_id=current_user.id, name=name, calories=calories, protein=protein, fat=fat, carbs=carbs, date=datetime.utcnow().date())
+        entry = FoodEntry(user_id=current_user.id, name=name, calories=calories, protein=protein, fat=fat, carbs=carbs,
+                          date=datetime.utcnow().date())
         db.session.add(entry)
         db.session.commit()
         flash('Food item logged successfully', 'success')
@@ -85,18 +117,21 @@ def log_food():
     return render_template('log_food.html', food_entries=food_entries_today)
 
 
+
 @app.route('/set_goals', methods=['GET', 'POST'])
 @login_required
 def set_goals():
     if request.method == 'POST':
-        current_user.daily_calorie_goal = int(request.form['calorie_goal'])
-        current_user.daily_protein_goal = int(request.form['protein_goal'])
-        current_user.daily_fat_goal = int(request.form['fat_goal'])
-        current_user.daily_carbs_goal = int(request.form['carbs_goal'])
+        try:
+            current_user.daily_calorie_goal = int(request.form['calorie_goal'])
+            current_user.daily_protein_goal = int(request.form['protein_goal'])
+            current_user.daily_fat_goal = int(request.form['fat_goal'])
+            current_user.daily_carbs_goal = int(request.form['carbs_goal'])
 
-        db.session.commit()
-        flash('Goals updated successfully', 'success')
+            db.session.commit()
+            flash('Goals updated successfully', 'success')
+        except ValueError:
+            flash('Please enter valid numbers for all fields.', 'danger')
         return redirect(url_for('home'))
 
     return render_template('set_goals.html')
-

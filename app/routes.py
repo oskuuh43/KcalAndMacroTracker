@@ -74,12 +74,28 @@ def home():
     # Get today's food entries
     food_entries_today = FoodEntry.query.filter_by(user_id=user.id, date=today).all()
 
+    # Calculate total consumed
     total_calories = sum(entry.calories for entry in food_entries_today)
+    total_protein = sum(entry.protein for entry in food_entries_today)
+    total_fat = sum(entry.fat for entry in food_entries_today)
+    total_carbs = sum(entry.carbs for entry in food_entries_today)
+
+    # Calculate remaining values
     calories_left = user.daily_calorie_goal - total_calories
+    protein_left = user.daily_protein_goal - total_protein
+    fat_left = user.daily_fat_goal - total_fat
+    carbs_left = user.daily_carbs_goal - total_carbs
 
-    return render_template('home.html', today=today, calorie_goal=user.daily_calorie_goal,
-                           calories_left=calories_left, food_entries=food_entries_today)
-
+    return render_template('home.html', today=today,
+                           calorie_goal=user.daily_calorie_goal,
+                           calories_left=calories_left,
+                           protein_goal=user.daily_protein_goal,
+                           protein_left=protein_left,
+                           fat_goal=user.daily_fat_goal,
+                           fat_left=fat_left,
+                           carbs_goal=user.daily_carbs_goal,
+                           carbs_left=carbs_left,
+                           food_entries=food_entries_today)
 
 
 @app.route('/log_food', methods=['GET', 'POST'])

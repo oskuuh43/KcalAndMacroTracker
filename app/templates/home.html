@@ -6,11 +6,21 @@
 <h1>Home</h1>
 
 <p>Today's date: {{ today }}</p>
-<p>Calorie goal: {{ calorie_goal }}</p>
-<p>Calories left: {{ calories_left }}</p>
+
+<p><strong>Calorie goal:</strong> {{ calorie_goal }} kcal</p>
+<p><strong>Calories remaining:</strong> {{ calories_left }} kcal</p>
+
+<p><strong>Protein goal:</strong> {{ protein_goal }} g</p>
+<p><strong>Protein remaining:</strong> {{ protein_left }} g</p>
+
+<p><strong>Fat goal:</strong> {{ fat_goal }} g</p>
+<p><strong>Fats remaining:</strong> {{ fat_left }} g</p>
+
+<p><strong>Carb goal:</strong> {{ carbs_goal }} g</p>
+<p><strong>Carbs remaining:</strong> {{ carbs_left }} g</p>
 
 <h2>Today's Food Entries</h2>
-<table class="table">
+<table class="table table-bordered">
     <thead>
         <tr>
             <th>Name</th>

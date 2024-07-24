@@ -3,16 +3,27 @@
 {% block content %}
 <h1>Add Food Item</h1>
 <form action="{{ url_for('add_food') }}" method="post">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" required>
-    <label for="calories">Calories:</label>
-    <input type="number" id="calories" name="calories" required>
-    <label for="protein">Protein (g):</label>
-    <input type="number" id="protein" name="protein" required>
-    <label for="carbohydrates">Carbohydrates (g):</label>
-    <input type="number" id="carbohydrates" name="carbohydrates" required>
-    <label for="fats">Fats (g):</label>
-    <input type="number" id="fats" name="fats" required>
-    <button type="submit">Add Food</button>
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="calories">Calories:</label>
+        <input type="number" id="calories" name="calories" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="protein">Protein (g):</label>
+        <input type="number" id="protein" name="protein" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="carbohydrates">Carbohydrates (g):</label>
+        <input type="number" id="carbohydrates" name="carbohydrates" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="fats">Fats (g):</label>
+        <input type="number" id="fats" name="fats" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Food</button>
 </form>
 {% endblock %}
+

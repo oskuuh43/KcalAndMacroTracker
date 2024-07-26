@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>High Protein Foods</h1>
+    <form method="post" action="{{ url_for('main.high_protein') }}">
+        <label for="min_protein_ratio">Min Protein-to-Calorie Ratio:</label>
+        <input type="text" id="min_protein_ratio" name="min_protein_ratio" value="{{ request.form.get('min_protein_ratio', '0.1') }}">
+        <input type="submit" value="Search">
+    </form>
+
+    {% if high_protein_options %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Calories</th>
+                    <th>Protein</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in high_protein_options %}
+                    <tr>
+                        <td>{{ item.Name }}</td>
+                        <td>{{ item.Calories }}</td>
+                        <td>{{ item.Protein }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No high protein foods found.</p>
+    {% endif %}
+{% endblock %}

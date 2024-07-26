@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1>Set Daily Goals</h1>
-<form method="POST" action="{{ url_for('set_goals') }}">
+<form method="POST" action="{{ url_for('main.set_goals') }}">
     <div class="form-group">
         <label for="calorie_goal">Daily Calorie Goal:</label>
         <input type="number" id="calorie_goal" name="calorie_goal" class="form-control" value="{{ current_user.daily_calorie_goal }}" required>

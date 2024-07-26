@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1>Log Food</h1>
-<form method="POST" action="{{ url_for('log_food') }}">
+<form method="POST" action="{{ url_for('main.log_food') }}">
     <div class="form-group">
         <label for="name">Food Name:</label>
         <input type="text" id="name" name="name" class="form-control" required>

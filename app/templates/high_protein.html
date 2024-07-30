@@ -5,7 +5,17 @@
     <form method="post" action="{{ url_for('main.high_protein') }}">
         <label for="min_protein_ratio">Min Protein-to-Calorie Ratio:</label>
         <input type="text" id="min_protein_ratio" name="min_protein_ratio" value="{{ request.form.get('min_protein_ratio', '0.1') }}">
-        <input type="submit" value="Search">
+
+        <label for="sort_by">Sort By:</label>
+        <select id="sort_by" name="sort_by">
+            <option value="protein_to_calories" {% if request.form.get('sort_by') == 'protein_to_calories' %}selected{% endif %}>Protein/Calorie Ratio</option>
+            <option value="name" {% if request.form.get('sort_by') == 'name' %}selected{% endif %}>Name</option>
+        </select>
+
+        <label for="search_term">Search by Name:</label>
+        <input type="text" id="search_term" name="search_term" value="{{ request.form.get('search_term', '') }}">
+
+        <input type="submit" value="Filter">
     </form>
 
     {% if high_protein_options %}
@@ -15,6 +25,7 @@
                     <th>Name</th>
                     <th>Calories</th>
                     <th>Protein</th>
+                    <th>Protein/Calorie Ratio</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,6 +34,7 @@
                         <td>{{ item.Name }}</td>
                         <td>{{ item.Calories }}</td>
                         <td>{{ item.Protein }}</td>
+                        <td>{{ item.Protein_to_Calories }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

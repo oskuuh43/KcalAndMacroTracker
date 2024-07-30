@@ -93,34 +93,52 @@ def home():
 def log_food():
     if request.method == 'POST':
         name = request.form.get('name')
-        calories = request.form.get('calories')
-        protein = request.form.get('protein')
-        fat = request.form.get('fat')
-        carbs = request.form.get('carbs')
+        calories_per_100g = request.form.get('calories_per_100g')
+        protein_per_100g = request.form.get('protein_per_100g')
+        fat_per_100g = request.form.get('fat_per_100g')
+        carbs_per_100g = request.form.get('carbs_per_100g')
+        amount = request.form.get('amount')
 
-        if not all([name, calories, protein, fat, carbs]):
+        if not all([name, calories_per_100g, protein_per_100g, fat_per_100g, carbs_per_100g, amount]):
             flash('All fields are required.', 'danger')
             return redirect(url_for('main.log_food'))
 
         try:
-            calories = int(calories)
-            protein = int(protein)
-            fat = int(fat)
-            carbs = int(carbs)
-        except ValueError:
-            flash('Please enter valid numbers for calories and macronutrients.', 'danger')
-            return redirect(url_for('main.log_food'))
+            # Convert to float for calculations
+            calories_per_100g = float(calories_per_100g)
+            protein_per_100g = float(protein_per_100g)
+            fat_per_100g = float(fat_per_100g)
+            carbs_per_100g = float(carbs_per_100g)
+            amount = float(amount)
 
-        entry = FoodEntry(user_id=current_user.id, name=name, calories=calories, protein=protein, fat=fat, carbs=carbs,
-                          date=datetime.utcnow().date())
-        db.session.add(entry)
-        db.session.commit()
-        flash('Food item logged successfully', 'success')
+            # Calculate total calories and macros based on the amount of food
+            total_calories = (calories_per_100g / 100) * amount
+            total_protein = (protein_per_100g / 100) * amount
+            total_fat = (fat_per_100g / 100) * amount
+            total_carbs = (carbs_per_100g / 100) * amount
+
+            entry = FoodEntry(
+                user_id=current_user.id,
+                name=name,
+                calories=total_calories,
+                protein=total_protein,
+                fat=total_fat,
+                carbs=total_carbs,
+                date=datetime.utcnow().date()
+            )
+            db.session.add(entry)
+            db.session.commit()
+            flash('Food item logged successfully', 'success')
+
+        except ValueError:
+            flash('Please enter valid numbers for all fields.', 'danger')
+            return redirect(url_for('main.log_food'))
 
     today = datetime.utcnow().date()
     food_entries_today = FoodEntry.query.filter_by(user_id=current_user.id, date=today).all()
 
     return render_template('log_food.html', food_entries=food_entries_today)
+
 
 @bp.route('/set_goals', methods=['GET', 'POST'])
 @login_required
@@ -140,19 +158,36 @@ def set_goals():
 
     return render_template('set_goals.html')
 
+
 @bp.route('/high_protein', methods=['GET', 'POST'])
 @login_required
 def high_protein():
-    # Load food data
     df = load_food_data()
+    high_protein_options = []
 
-    high_protein_options = []  # Initialize as an empty list
     if request.method == 'POST':
         try:
             min_protein_ratio = float(request.form.get('min_protein_ratio', 0.1))
-            high_protein_df = get_high_protein_options(df, min_protein_ratio)
-            high_protein_options = high_protein_df.to_dict(orient='records')  # Convert to list of dicts
+            sort_by = request.form.get('sort_by', 'protein_to_calories')
+            search_term = request.form.get('search_term', '').lower()
+
+            # Get high protein options
+            high_protein_options = get_high_protein_options(df, min_protein_ratio)
+
+            # Filter by search term
+            if search_term:
+                high_protein_options = [item for item in high_protein_options if search_term in item['Name'].lower()]
+
+            # Sort by selected criteria
+            if sort_by == 'protein_to_calories':
+                high_protein_options = sorted(high_protein_options, key=lambda x: x['Protein_to_Calories'],
+                                              reverse=True)
+            elif sort_by == 'name':
+                high_protein_options = sorted(high_protein_options, key=lambda x: x['Name'])
+
         except ValueError:
-            flash('Invalid input for protein-to-calorie ratio. Please enter a valid number.', 'danger')
+            flash('Invalid input. Please check your values.', 'danger')
 
     return render_template('high_protein.html', high_protein_options=high_protein_options)
+
+

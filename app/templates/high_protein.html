@@ -3,15 +3,18 @@
 {% block content %}
     <h1>High Protein Foods</h1>
     <form method="post" action="{{ url_for('main.high_protein') }}">
+        <!-- Input for min protein to calorie ratio -->
         <label for="min_protein_ratio">Min Protein-to-Calorie Ratio:</label>
         <input type="text" id="min_protein_ratio" name="min_protein_ratio" value="{{ request.form.get('min_protein_ratio', '0.1') }}">
 
+        <!-- Sorting options -->
         <label for="sort_by">Sort By:</label>
         <select id="sort_by" name="sort_by">
             <option value="protein_to_calories" {% if request.form.get('sort_by') == 'protein_to_calories' %}selected{% endif %}>Protein/Calorie Ratio</option>
             <option value="name" {% if request.form.get('sort_by') == 'name' %}selected{% endif %}>Name</option>
         </select>
 
+        <!-- Input for searching for foods -->
         <label for="search_term">Search by Name:</label>
         <input type="text" id="search_term" name="search_term" value="{{ request.form.get('search_term', '') }}">
 
@@ -19,6 +22,7 @@
     </form>
 
     {% if high_protein_options %}
+    <!-- Display high protein foods -->
         <table>
             <thead>
                 <tr>

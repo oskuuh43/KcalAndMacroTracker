@@ -3,6 +3,7 @@ import pandas as pd
 def load_food_data():
     # Path to the Excel file
     file_path = 'app/data/resultset.xlsx'
+
     # Load the data into a DataFrame
     df = pd.read_excel(file_path, engine='openpyxl')
 

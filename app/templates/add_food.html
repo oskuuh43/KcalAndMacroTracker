@@ -3,26 +3,32 @@
 {% block content %}
 <h1>Add Food Item</h1>
 <form action="{{ url_for('main.add_food') }}" method="post">
+    <!-- Input for the food name -->
     <div class="form-group">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" class="form-control" required>
     </div>
+    <!-- Input for calories -->
     <div class="form-group">
         <label for="calories">Calories:</label>
         <input type="number" id="calories" name="calories" class="form-control" required>
     </div>
+    <!-- Input for protein -->
     <div class="form-group">
         <label for="protein">Protein (g):</label>
         <input type="number" id="protein" name="protein" class="form-control" required>
     </div>
+    <!-- Input for carbs -->
     <div class="form-group">
         <label for="carbohydrates">Carbohydrates (g):</label>
         <input type="number" id="carbohydrates" name="carbohydrates" class="form-control" required>
     </div>
+    <!-- Input for fats -->
     <div class="form-group">
         <label for="fats">Fats (g):</label>
         <input type="number" id="fats" name="fats" class="form-control" required>
     </div>
+    <!-- Submit button -->
     <button type="submit" class="btn btn-primary">Add Food</button>
 </form>
 {% endblock %}

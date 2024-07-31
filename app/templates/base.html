@@ -16,9 +16,11 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="{{ url_for('main.home') }}">Home</a>
         {% if current_user.is_authenticated %}
+        <!-- pages for logged in users -->
             <a class="nav-link" href="{{ url_for('main.logout') }}">Logout</a>
             <a class="nav-link" href="{{ url_for('main.high_protein') }}">High Protein Foods</a>
         {% else %}
+        <!-- pages for guests -->
             <a class="nav-link" href="{{ url_for('main.login') }}">Login</a>
             <a class="nav-link" href="{{ url_for('main.register') }}">Register</a>
         {% endif %}
